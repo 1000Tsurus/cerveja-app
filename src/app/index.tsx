@@ -5,17 +5,19 @@ import { Animated, StyleSheet, View } from "react-native";
 
 export default function Index() {
   const router = useRouter();
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  const loadingOpacity = useRef(new Animated.Value(1)).current;
+  const introOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const pulseAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(fadeAnim, {
+        Animated.timing(loadingOpacity, {
           toValue: 0.35,
           duration: 700,
           useNativeDriver: true,
         }),
-        Animated.timing(fadeAnim, {
+        Animated.timing(loadingOpacity, {
           toValue: 1,
           duration: 700,
           useNativeDriver: true,
@@ -25,23 +27,33 @@ export default function Index() {
 
     pulseAnimation.start();
 
-    const timer = setTimeout(() => {
+    const firstTimer = setTimeout(() => {
       pulseAnimation.stop();
 
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => {
-        router.replace("/home");
-      });
-    }, 2500);
+      Animated.parallel([
+        Animated.timing(loadingOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(introOpacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 4200);
+
+    const secondTimer = setTimeout(() => {
+      router.replace("/home");
+    }, 8300);
 
     return () => {
       pulseAnimation.stop();
-      clearTimeout(timer);
+      clearTimeout(firstTimer);
+      clearTimeout(secondTimer);
     };
-  }, [fadeAnim, router]);
+  }, [introOpacity, loadingOpacity, router]);
 
   return (
     <LinearGradient
@@ -51,9 +63,16 @@ export default function Index() {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
-          Carregando...
-        </Animated.Text>
+        <Animated.View style={[styles.absoluteCenter, { opacity: loadingOpacity }]}>
+          <Animated.Text style={styles.loadingText}>Carregando...</Animated.Text>
+        </Animated.View>
+
+        <Animated.View style={[styles.absoluteCenter, { opacity: introOpacity }]}>
+          <Animated.Text style={styles.title}>Olá, Vinícius!</Animated.Text>
+          <Animated.Text style={styles.subtitle}>
+            Bem-vindo ao aplicativo.
+          </Animated.Text>
+        </Animated.View>
       </View>
     </LinearGradient>
   );
@@ -67,11 +86,28 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 24,
   },
-  title: {
+  absoluteCenter: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
     fontSize: 30,
     fontWeight: "bold",
     color: "#FFFFFF",
     letterSpacing: 1,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#FFF5CC",
+    textAlign: "center",
   },
 });

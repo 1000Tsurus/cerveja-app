@@ -2,30 +2,30 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function Home() {
+export default function Perfil() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Teste</Text>
-        <Text style={styles.subtitle}>Bem-vindo a Revelação.</Text>
+        <Text style={styles.title}>Perfil</Text>
+        <Text style={styles.subtitle}>Aqui você pode colocar dados do usuário.</Text>
       </View>
 
       <View style={styles.bottomNav}>
         <Pressable style={styles.navItem} onPress={() => router.replace("/intro")}>
           <Ionicons name="sparkles-outline" size={26} color="#B30000" />
-          <Text style={styles.navText}>Dashboard</Text>
+          <Text style={styles.navText}>Intro</Text>
         </Pressable>
 
         <Pressable style={styles.navItem} onPress={() => router.replace("/home")}>
-          <Ionicons name="home" size={30} color="#B30000" />
+          <Ionicons name="home-outline" size={26} color="#B30000" />
           <Text style={styles.navText}>Home</Text>
         </Pressable>
 
         <Pressable style={styles.navItem} onPress={() => router.replace("/perfil")}>
-          <Ionicons name="person-outline" size={26} color="#B30000" />
-          <Text style={styles.navText}>Equipe</Text>
+          <Ionicons name="person" size={30} color="#B30000" />
+          <Text style={styles.navText}>Perfil</Text>
         </Pressable>
       </View>
     </View>
@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: "#666666",
+    textAlign: "center",
   },
   bottomNav: {
     flexDirection: "row",

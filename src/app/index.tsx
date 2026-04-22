@@ -1,7 +1,48 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
 
 export default function Index() {
+  const router = useRouter();
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0.35,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    pulseAnimation.start();
+
+    const timer = setTimeout(() => {
+      pulseAnimation.stop();
+
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start(() => {
+        router.replace("/home");
+      });
+    }, 2500);
+
+    return () => {
+      pulseAnimation.stop();
+      clearTimeout(timer);
+    };
+  }, [fadeAnim, router]);
+
   return (
     <LinearGradient
       colors={["#B30000", "#FF5E00", "#FFD000"] as const}
@@ -10,9 +51,9 @@ export default function Index() {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Carregando...</Text>
-        <ActivityIndicator size="large" color="#FFFFFF" />
-        <Text style={styles.subtitle}>Preparando sua experiência</Text>
+        <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
+          Carregando...
+        </Animated.Text>
       </View>
     </LinearGradient>
   );
@@ -26,17 +67,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "bold",
     color: "#FFFFFF",
-    marginBottom: 20,
-  },
-  subtitle: {
-    marginTop: 16,
-    fontSize: 16,
-    color: "#FFF5CC",
+    letterSpacing: 1,
   },
 });

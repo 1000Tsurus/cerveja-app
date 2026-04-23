@@ -1,25 +1,30 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, ImageSourcePropType, StyleSheet, View } from "react-native";
 
 export default function Index() {
   const router = useRouter();
 
-  const loadingOpacity = useRef(new Animated.Value(1)).current;
+  const logoScale = useRef(new Animated.Value(1)).current;
+  const logoOpacity = useRef(new Animated.Value(1)).current;
   const introOpacity = useRef(new Animated.Value(0)).current;
+
+  const logoSource: ImageSourcePropType = require("../../assets/images/SchraLOGO.png");
+  // Se preferir, troque por:
+  // const logoSource: ImageSourcePropType = require("../../assets/images/splash-icon.png");
 
   useEffect(() => {
     const pulseAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(loadingOpacity, {
-          toValue: 0.35,
-          duration: 700,
+        Animated.timing(logoScale, {
+          toValue: 1.12,
+          duration: 900,
           useNativeDriver: true,
         }),
-        Animated.timing(loadingOpacity, {
+        Animated.timing(logoScale, {
           toValue: 1,
-          duration: 700,
+          duration: 900,
           useNativeDriver: true,
         }),
       ])
@@ -31,7 +36,7 @@ export default function Index() {
       pulseAnimation.stop();
 
       Animated.parallel([
-        Animated.timing(loadingOpacity, {
+        Animated.timing(logoOpacity, {
           toValue: 0,
           duration: 500,
           useNativeDriver: true,
@@ -42,18 +47,18 @@ export default function Index() {
           useNativeDriver: true,
         }),
       ]).start();
-    }, 4200);
+    }, 5200); // tempo do carregamento
 
     const secondTimer = setTimeout(() => {
       router.replace("/home");
-    }, 8300);
+    }, 9300); // loading + intro
 
     return () => {
       pulseAnimation.stop();
       clearTimeout(firstTimer);
       clearTimeout(secondTimer);
     };
-  }, [introOpacity, loadingOpacity, router]);
+  }, [introOpacity, logoOpacity, logoScale, router]);
 
   return (
     <LinearGradient
@@ -63,8 +68,16 @@ export default function Index() {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Animated.View style={[styles.absoluteCenter, { opacity: loadingOpacity }]}>
-          <Animated.Text style={styles.loadingText}>Carregando...</Animated.Text>
+        <Animated.View
+          style={[
+            styles.absoluteCenter,
+            {
+              opacity: logoOpacity,
+              transform: [{ scale: logoScale }],
+            },
+          ]}
+        >
+          <Animated.Image source={logoSource} style={styles.logo} resizeMode="contain" />
         </Animated.View>
 
         <Animated.View style={[styles.absoluteCenter, { opacity: introOpacity }]}>
@@ -93,11 +106,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  loadingText: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    letterSpacing: 1,
+  logo: {
+    width: 170,
+    height: 170,
   },
   title: {
     fontSize: 28,

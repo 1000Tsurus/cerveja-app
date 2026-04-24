@@ -1,14 +1,17 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import BottomNav from "../components/BottomNav";
+import PageHeader from "../components/PageHeader";
+import { useSwipeNavigation } from "../components/useSwipeNavigation";
 
 export default function Perfil() {
+  const swipe = useSwipeNavigation("/config", "/dash");
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...swipe.panHandlers}>
       <View style={styles.content}>
-        <Text style={styles.title}>Perfil</Text>
-        <Text style={styles.subtitle}>
-          Aqui você pode colocar dados do usuário.
-        </Text>
+        <PageHeader
+          title="Perfil"
+          subtitle="Aqui você pode colocar dados do usuário."
+        />
       </View>
 
       <BottomNav />

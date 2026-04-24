@@ -1,8 +1,11 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import BottomNav from "../components/BottomNav";
+import PageHeader from "../components/PageHeader";
+import { useSwipeNavigation } from "../components/useSwipeNavigation";
 
 export default function Dash() {
+  const swipe = useSwipeNavigation("/perfil", "/home");
   const tanque = {
     nome: "Tanque Principal",
     temperatura: "4.8°C",
@@ -15,15 +18,15 @@ export default function Dash() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...swipe.panHandlers}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.pageTitle}>Dashboard</Text>
-        <Text style={styles.pageSubtitle}>
-          Monitoramento do tanque em tempo real
-        </Text>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Monitoramento do tanque em tempo real"
+      />
 
         <View style={styles.mainCard}>
           <View style={styles.mainHeader}>

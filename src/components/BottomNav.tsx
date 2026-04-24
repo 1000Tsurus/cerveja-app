@@ -30,6 +30,12 @@ export default function BottomNav() {
       icon: "person-outline",
       activeIcon: "person",
     },
+    {
+      label: "Config",
+      route: "/config",
+      icon: "settings-outline",
+      activeIcon: "settings",
+    },
   ];
 
   return (

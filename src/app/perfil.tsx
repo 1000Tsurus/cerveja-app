@@ -4,7 +4,7 @@ import PageHeader from "../components/PageHeader";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
 
 export default function Perfil() {
-  const swipe = useSwipeNavigation("/config", "/dash");
+  const swipe = useSwipeNavigation("/cerveja", "/config");
   return (
     <View style={styles.container} {...swipe.panHandlers}>
       <View style={styles.content}>

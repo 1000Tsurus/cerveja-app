@@ -13,22 +13,34 @@ export default function BottomNav() {
     activeIcon: keyof typeof Ionicons.glyphMap;
   }[] = [
     {
-      label: "Home",
-      route: "/home",
-      icon: "home-outline",
-      activeIcon: "home",
-    },
-    {
-      label: "Dashboard",
-      route: "/dash",
-      icon: "grid-outline",
-      activeIcon: "grid",
-    },
-    {
-      label: "Perfil",
+      label: "Perfil", //perfil
       route: "/perfil",
       icon: "person-outline",
       activeIcon: "person",
+    },
+    {
+      label: "Beer",
+      route: "/cerveja",
+      icon: "beer-outline",
+      activeIcon: "beer",
+    },
+    {
+      label: "Home", //home
+      route: "/home",
+      icon: "home-outline",
+      activeIcon: "home",
+   },
+    {
+      label: "Dash",
+      route: "/dash",
+      icon: "grid-outline",
+      activeIcon: "grid",
+   },
+    {
+      label: "Controle",
+     route: "/controle",
+      icon: "game-controller-outline",
+     activeIcon: "game-controller",
     },
     {
       label: "Config",

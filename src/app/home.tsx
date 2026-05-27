@@ -7,7 +7,7 @@ import { useSwipeNavigation } from "../components/useSwipeNavigation";
 
 export default function Home() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const swipe = useSwipeNavigation("/dash", "/config");
+  const swipe = useSwipeNavigation("/dash", "/cerveja");
 
   useEffect(() => {
     Animated.timing(fadeAnim, {

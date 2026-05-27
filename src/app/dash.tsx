@@ -5,16 +5,16 @@ import PageHeader from "../components/PageHeader";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
 
 export default function Dash() {
-  const swipe = useSwipeNavigation("/perfil", "/home");
+  const swipe = useSwipeNavigation("/controle", "/home");
   const tanque = {
-    nome: "Tanque Principal",
+    nome: "Tanque Total",
     temperatura: "4.8°C",
-    volumeAtual: "89 L",
-    volumeFaltante: "61 L",
-    capacidadeTotal: "150 L",
+    volumeAtual: "20 L",
+    volumeFaltante: "0 L",
+    capacidadeTotal: "20 L",
     status: "Estável",
     ultimaAtualizacao: "Agora mesmo",
-    percentualAtual: 59,
+    percentualAtual: 100,
   };
 
   return (

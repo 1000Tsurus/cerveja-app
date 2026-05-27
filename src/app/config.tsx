@@ -6,7 +6,7 @@ import PageHeader from "../components/PageHeader";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
 
 export default function Config() {
-  const swipe = useSwipeNavigation("/perfil", "/controle");
+  const swipe = useSwipeNavigation("/controle", "/perfil");
 
   const bluetoothEnabled = false;
   const connectedDevice: string | null = null;

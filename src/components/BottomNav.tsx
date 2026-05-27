@@ -13,10 +13,10 @@ export default function BottomNav() {
     activeIcon: keyof typeof Ionicons.glyphMap;
   }[] = [
     {
-      label: "Perfil", //perfil
-      route: "/perfil",
-      icon: "person-outline",
-      activeIcon: "person",
+      label: "Controle", //perfil
+      route: "/controle",
+      icon: "game-controller-outline",
+      activeIcon: "game-controller",
     },
     {
       label: "Beer",
@@ -37,10 +37,10 @@ export default function BottomNav() {
       activeIcon: "grid",
    },
     {
-      label: "Controle",
-     route: "/controle",
-      icon: "game-controller-outline",
-     activeIcon: "game-controller",
+      label: "Perfil",
+      route: "/perfil",
+      icon: "person-outline",
+      activeIcon: "person",
     },
     {
       label: "Config",

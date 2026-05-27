@@ -3,18 +3,22 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import BottomNav from "../components/BottomNav";
 import PageHeader from "../components/PageHeader";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
+import { useTank } from "../context/TankContext";
 
 export default function Dash() {
-  const swipe = useSwipeNavigation("/controle", "/home");
+  const swipe = useSwipeNavigation("/perfil", "/home");
+
+  const { currentLiters, percentage } = useTank();
+
   const tanque = {
     nome: "Tanque Total",
     temperatura: "4.8°C",
-    volumeAtual: "20 L",
-    volumeFaltante: "0 L",
+    volumeAtual: `${currentLiters.toFixed(2)} L`,
+    volumeFaltante: `${(20 - currentLiters).toFixed(2)} L`,
     capacidadeTotal: "20 L",
     status: "Estável",
     ultimaAtualizacao: "Agora mesmo",
-    percentualAtual: 100,
+    percentualAtual: percentage,
   };
 
   return (
@@ -53,7 +57,7 @@ export default function Dash() {
               <View style={styles.iconWrap}>
                 <Ionicons name="beer-outline" size={22} color="#B30000" />
               </View>
-              <Text style={styles.metricLabel}>Volume faltante</Text>
+              <Text style={styles.metricLabel}>Volume Consumido</Text>
               <Text style={styles.metricValue}>{tanque.volumeFaltante}</Text>
             </View>
           </View>
@@ -61,12 +65,12 @@ export default function Dash() {
           <View style={styles.progressSection}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressTitle}>Nível atual</Text>
-              <Text style={styles.progressPercent}>{tanque.percentualAtual}%</Text>
+              <Text style={styles.progressPercent}>{tanque.percentualAtual.toFixed(2)}%</Text>
             </View>
 
             <View style={styles.progressTrack}>
               <View
-                style={[styles.progressFill, { width: `${tanque.percentualAtual}%` }]}
+                style={[styles.progressFill, { width: `${tanque.percentualAtual.toFixed(2)}%` as `${number}%`}]}
               />
             </View>
 
@@ -90,7 +94,7 @@ export default function Dash() {
           </View>
 
           <View style={styles.tableRow}>
-            <Text style={styles.tableLabel}>Volume faltante</Text>
+            <Text style={styles.tableLabel}>Volume Consumido</Text>
             <Text style={styles.tableValue}>{tanque.volumeFaltante}</Text>
           </View>
 

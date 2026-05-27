@@ -5,7 +5,7 @@ import { useSwipeNavigation } from "../components/useSwipeNavigation";
 import { StyleSheet, View } from "react-native";
 
 export default function Cerveja() {
-  const swipe = useSwipeNavigation("/home", "/perfil");
+  const swipe = useSwipeNavigation("/home", "/controle");
 
   return (
     <View style={styles.container} {...swipe.panHandlers}>

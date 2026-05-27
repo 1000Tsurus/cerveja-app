@@ -2,6 +2,7 @@ import { Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { TankProvider } from "../context/TankContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,14 +26,16 @@ export default function Layout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        animation: "none",
-        contentStyle: {
+    <TankProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: "none",
+          contentStyle: {
           backgroundColor: "#F6F7FB",
         },
       }}
-    />
+      />
+    </TankProvider>
   );
 }

@@ -62,7 +62,7 @@ export default function Index() {
 
   return (
     <LinearGradient
-      colors={["#B30000", "#FF5E00", "#FFD000"] as const}
+      colors={["#B30000", "#610000", "#000000"] as const}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
@@ -81,9 +81,9 @@ export default function Index() {
         </Animated.View>
 
         <Animated.View style={[styles.absoluteCenter, { opacity: introOpacity }]}>
-          <Animated.Text style={styles.title}>Olá, Vinícius!</Animated.Text>
+          <Animated.Text style={styles.title}>Seja Bem-Vindo!</Animated.Text>
           <Animated.Text style={styles.subtitle}>
-            Bem-vindo ao aplicativo.
+            A melhor cerveja artesanal.
           </Animated.Text>
         </Animated.View>
       </View>

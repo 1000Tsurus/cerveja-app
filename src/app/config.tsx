@@ -30,6 +30,7 @@ export default function Config() {
     );
   }
 
+  //retornado um view
   return (
     <View style={styles.container} {...swipe.panHandlers}>
       <ScrollView
@@ -44,8 +45,7 @@ export default function Config() {
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View>
-              <Text style={styles.cardTitle}>Bluetooth</Text>
-              <Text style={styles.cardDescription}>
+              <Text style={styles.cardTitle}>Bluetooth</Text> <Text style={styles.cardDescription}>
                 Status da conexão Bluetooth do celular
               </Text>
             </View>
@@ -131,6 +131,7 @@ export default function Config() {
   );
 }
 
+//Criando estilos 
 const styles = StyleSheet.create({
   container: {
     flex: 1,

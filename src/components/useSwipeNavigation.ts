@@ -12,19 +12,19 @@ export function useSwipeNavigation(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, gesture) => {
-          const horizontal = Math.abs(gesture.dx) > 20;
+          const horizontal = Math.abs(gesture.TankContextType) > 20;
           const moreHorizontalThanVertical =
-            Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.2;
+            Math.abs(gesture.TankContextType) > Math.abs(gesture.dy) * 1.2;
 
           return horizontal && moreHorizontalThanVertical;
         },
 
         onPanResponderRelease: (_, gesture) => {
-          if (gesture.dx < -70 && swipeLeftTo) {
+          if (gesture.TankContextType < -70 && swipeLeftTo) {
             router.replace(swipeLeftTo);
           }
 
-          if (gesture.dx > 70 && swipeRightTo) {
+          if (gesture.TankContextType > 70 && swipeRightTo) {
             router.replace(swipeRightTo);
           }
         },

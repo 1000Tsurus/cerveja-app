@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSBluetoothAlwaysUsageDescription": "Este aplicativo precisa de acesso contínuo ao Bluetooth para monitorar e controlar o tanque de cerveja."
+      },
+      "bundleIdentifier": "com.devtsurus.cerveja"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +27,12 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.devtsurus.cerveja"
+      "package": "com.devtsurus.cerveja",
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -35,7 +44,18 @@
       "expo-font",
       "expo-web-browser",
       "expo-splash-screen",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": false,
+          "modes": [
+            "peripheral",
+            "central"
+          ],
+          "bluetoothAlwaysPermission": "Permitir que o aplicativo se conecte ao ESP32 do tanque de cerveja."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

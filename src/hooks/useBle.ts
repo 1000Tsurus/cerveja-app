@@ -3,7 +3,7 @@ import { Platform, PermissionsAndroid } from "react-native";
 import { BleManager, Device, BleErrorCode } from "react-native-ble-plx";
 import { useTank } from "../context/TankContext"; // Importa o contexto puro para injetar dados
 
-const bleManager = new BleManager();
+const bleManager = Platform.OS !== 'web' ? new BleManager() : null;
 
 
 const SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
@@ -32,7 +32,7 @@ export function useBle() {
   useEffect(() => {
     requisitarPermissoesAndroid();
     return () => {
-      bleManager.stopDeviceScan();
+      bleManager?.stopDeviceScan();
     };
   }, []);
 
@@ -77,7 +77,7 @@ export function useBle() {
     setEstaEscaneando(true);
     setStatusConexao("Escaneando...");
 
-    bleManager.startDeviceScan(null, null, (error, device) => {
+    bleManager?.startDeviceScan(null, null, (error, device) => {
       if (error) {
         console.error("Erro ao escanear:", error);
         setEstaEscaneando(false);
@@ -96,7 +96,7 @@ export function useBle() {
       }
 
       if (device && (device.name === 'ESP32-Cerveja' || device.localName === 'ESP32-Cerveja')) {
-        bleManager.stopDeviceScan();
+        bleManager?.stopDeviceScan();
         setEstaEscaneando(false);
         setStatusConexao("Conectando...");
         conectarAoDispositivo(device);

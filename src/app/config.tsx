@@ -4,11 +4,10 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import BottomNav from "../components/BottomNav";
 import PageHeader from "../components/PageHeader";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
-import { useBle } from "../hooks/useBle";
+import { useBle } from "../hooks/useBle"; // Certifique-se de que o caminho está correto
 
 export default function Config() {
   const swipe = useSwipeNavigation("/controle", "/perfil");
-
 
   const {
     dispositivoConectado,
@@ -16,151 +15,171 @@ export default function Config() {
     statusConexao,
     iniciarEscaneamento,
     enviarComandoPino,
-
   } = useBle();
 
-  const bluetoothEnabled = statusConexao === "Conectado" || estaEscaneando || statusConexao == "Descobrindo Dispositivo...";
+  // Tratamento de caixa de string para evitar problemas de case-sensitive ("Conectado")
+  const bluetoothEnabled =
+    statusConexao === "Conectado" ||
+    estaEscaneando ||
+    statusConexao === "Descobrindo Dispositivo...";
+
   const connectedDevice = dispositivoConectado?.name ?? dispositivoConectado?.localName ?? null;
+
   const appVersion =
     Constants.expoConfig?.version ??
     Constants.nativeApplicationVersion ??
     "1.0.0";
 
   function handleBluetoothPress() {
-    if (statusConexao == "conectado") {
+    if (statusConexao === "Conectado") {
       Alert.alert(
         "Bluetooth ativo",
         "O aplicativo se conectou com o Dispositivo"
       );
-
-    }
-    else {
-
+    } else {
       Alert.alert(
         "Bluetooth desativado",
-        "Nao foi possivel se conectar ao Dispositivo"
+        `Status atual: ${statusConexao}. Use o botão de busca abaixo.`
       );
-    };
+    }
+  }
 
-    function handleSearchEsp() {
-      if (statusConexao === "Bluetooth desligado") {
-        Alert.alert(
-          "Bluetooth Desativado",
-          "Por favor, ative o Bluetooth do seu celular nas configurações do sistema antes de buscar o ESP."
-        );
-        return;
-      }
+  function handleSearchEsp() {
+    if (statusConexao === "Bluetooth desligado") {
+      Alert.alert(
+        "Bluetooth Desativado",
+        "Por favor, ative o Bluetooth do seu celular nas configurações do sistema antes de buscar o ESP."
+      );
+      return;
+    }
 
-    };
-  };
+    // Dispara o escaneamento nativo apenas sob ação do clique do usuário
+    iniciarEscaneamento();
+  }
 
+  return (
+    <View style={styles.container} {...swipe.panHandlers}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <PageHeader
+          title="Configurações"
+          subtitle="Gerencie a conexão Bluetooth e o ESP do tanque."
+        />
 
-
-  // Se estiver tudo certo, dispara a busca real
-  iniciarEscaneamento();
-}
-
-return (
-  <View style={styles.container} {...swipe.panHandlers}>
-    <ScrollView
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <PageHeader
-        title="Configurações"
-        subtitle="Gerencie a conexão Bluetooth e o ESP do tanque."
-      />
-
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.cardTitle}>Bluetooth</Text>
-            <Text style={styles.cardDescription}>
-              Status da conexão Bluetooth do celular
-            </Text>
-          </View>
-
-          <View
-            style={[
-              styles.statusDot,
-              bluetoothEnabled ? styles.statusOn : styles.statusOff,
-            ]}
-          />
-        </View>
-
-        <Pressable style={styles.bluetoothButton} onPress={handleBluetoothPress}>
-          <Ionicons name="bluetooth" size={22} color="#FFFFFF" />
-          <Text style={styles.buttonText}>Bluetooth desligado</Text>
-        </Pressable>
-
-        <Text style={styles.infoText}>
-          O Bluetooth real será ativado futuramente para conexão com o ESP.
-        </Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Dispositivo ESP</Text>
-        <Text style={styles.cardDescription}>
-          Busque e conecte o ESP responsável pelo monitoramento.
-        </Text>
-
-        <Pressable style={styles.disabledButton} onPress={handleSearchEsp}>
-          <Ionicons name="search-outline" size={20} color="#FFFFFF" />
-          <Text style={styles.buttonText}>Buscar ESP</Text>
-        </Pressable>
-
-        <View style={styles.emptyDeviceBox}>
-          <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
-          <Text style={styles.emptyDeviceText}>
-            Nenhum ESP encontrado no momento
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>ESP conectado</Text>
-
-        {connectedDevice ? (
-          <View style={styles.connectedBox}>
-            <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
+        {/* CARD 1: BLUETOOTH STATUS */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
             <View>
-              <Text style={styles.connectedName}>{connectedDevice}</Text>
-              <Text style={styles.connectedId}>Dispositivo ativo</Text>
+              <Text style={styles.cardTitle}>Bluetooth</Text>
+              <Text style={styles.cardDescription}>
+                Status da conexão Bluetooth do celular
+              </Text>
             </View>
-          </View>
-        ) : (
-          <View style={styles.notConnectedBox}>
-            <Ionicons name="close-circle-outline" size={24} color="#B30000" />
-            <Text style={styles.notConnectedText}>Nenhum ESP conectado</Text>
-          </View>
-        )}
-      </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Sobre o aplicativo</Text>
-
-        <View style={styles.versionRow}>
-          <View style={styles.versionIcon}>
-            <Ionicons
-              name="information-circle-outline"
-              size={22}
-              color="#B30000"
+            <View
+              style={[
+                styles.statusDot,
+                bluetoothEnabled ? styles.statusOn : styles.statusOff,
+              ]}
             />
           </View>
 
-          <View>
-            <Text style={styles.versionLabel}>Versão do app</Text>
-            <Text style={styles.versionValue}>v{appVersion}</Text>
+          <Pressable
+            style={[
+              styles.bluetoothButton,
+              bluetoothEnabled && { backgroundColor: "#1F8A46" }
+            ]}
+            onPress={handleBluetoothPress}
+          >
+            <Ionicons name="bluetooth" size={22} color="#FFFFFF" />
+            <Text style={styles.buttonText}>
+              {statusConexao === "Conectado" ? "Bluetooth conectado" : `Status: ${statusConexao}`}
+            </Text>
+          </Pressable>
+
+          <Text style={styles.infoText}>
+            Comunicação via canal serial BLE ativo para escuta de dados e processamento no pino lógico.
+          </Text>
+        </View>
+
+        {/* CARD 2: DISPOSITIVO ESP (TRIGGER BUSCA) */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Dispositivo ESP</Text>
+          <Text style={styles.cardDescription}>
+            Busque e conecte o ESP responsible pelo monitoramento.
+          </Text>
+
+          <Pressable
+            style={[
+              styles.disabledButton,
+              !estaEscaneando && statusConexao !== "Conectado" && { backgroundColor: "#1565c0" }
+            ]}
+            onPress={handleSearchEsp}
+            disabled={estaEscaneando || statusConexao === "Conectado"}
+          >
+            <Ionicons name="search-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.buttonText}>
+              {estaEscaneando ? "Buscando..." : "Buscar ESP"}
+            </Text>
+          </Pressable>
+
+          <View style={styles.emptyDeviceBox}>
+            <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
+            <Text style={styles.emptyDeviceText}>
+              {estaEscaneando ? "Escaneando dispositivos próximos..." : "Nenhum ESP pareado nesta sessão"}
+            </Text>
           </View>
         </View>
-      </View>
-    </ScrollView>
 
-    <BottomNav />
-  </View>
-);
+        {/* CARD 3: DISPOSITIVO CONECTADO FEEDBACK */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>ESP conectado</Text>
+
+          {dispositivoConectado ? (
+            <View style={styles.connectedBox}>
+              <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
+              <View>
+                <Text style={styles.connectedName}>{connectedDevice || "ESP32-Cerveja"}</Text>
+                <Text style={styles.connectedId}>ID: {dispositivoConectado.id}</Text>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.notConnectedBox}>
+              <Ionicons name="close-circle-outline" size={24} color="#B30000" />
+              <Text style={styles.notConnectedText}>Nenhum ESP conectado</Text>
+            </View>
+          )}
+        </View>
+
+        {/* CARD 4: SOBRE */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Sobre o aplicativo</Text>
+
+          <View style={styles.versionRow}>
+            <View style={styles.versionIcon}>
+              <Ionicons
+                name="information-circle-outline"
+                size={22}
+                color="#B30000"
+              />
+            </View>
+
+            <View>
+              <Text style={styles.versionLabel}>Versão do app</Text>
+              <Text style={styles.versionValue}>v{appVersion}</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      <BottomNav />
+    </View>
+  );
 }
 
+// Mantendo exatamente a folha de estilos original do seu arquivo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -326,4 +345,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#151515",
   },
-})
+});

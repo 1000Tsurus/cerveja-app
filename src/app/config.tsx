@@ -4,131 +4,161 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import BottomNav from "../components/BottomNav";
 import PageHeader from "../components/PageHeader";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
+import { useBle } from "../hooks/useBle";
 
 export default function Config() {
   const swipe = useSwipeNavigation("/controle", "/perfil");
 
-  const bluetoothEnabled = false;
-  const connectedDevice: string | null = null;
 
+  const {
+    dispositivoConectado,
+    estaEscaneando,
+    statusConexao,
+    iniciarEscaneamento,
+    enviarComandoPino,
+
+  } = useBle();
+
+  const bluetoothEnabled = statusConexao === "Conectado" || estaEscaneando || statusConexao == "Descobrindo Dispositivo...";
+  const connectedDevice = dispositivoConectado?.name ?? dispositivoConectado?.localName ?? null;
   const appVersion =
     Constants.expoConfig?.version ??
     Constants.nativeApplicationVersion ??
     "1.0.0";
 
   function handleBluetoothPress() {
-    Alert.alert(
-      "Bluetooth desativado",
-      "A conexão Bluetooth real ainda não está ativada neste app. Quando você for usar com o ESP, ativamos a biblioteca BLE."
-    );
-  }
+    if (statusConexao == "conectado") {
+      Alert.alert(
+        "Bluetooth ativo",
+        "O aplicativo se conectou com o Dispositivo"
+      );
 
-  function handleSearchEsp() {
-    Alert.alert(
-      "Busca indisponível",
-      "A busca por ESP está desativada por enquanto. Essa função será conectada ao Bluetooth real depois."
-    );
-  }
+    }
+    else {
 
-  return (
-    <View style={styles.container} {...swipe.panHandlers}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <PageHeader
-          title="Configurações"
-          subtitle="Gerencie a conexão Bluetooth e o ESP do tanque."
-        />
+      Alert.alert(
+        "Bluetooth desativado",
+        "Nao foi possivel se conectar ao Dispositivo"
+      );
+    };
 
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
+    function handleSearchEsp() {
+      if (statusConexao === "Bluetooth desligado") {
+        Alert.alert(
+          "Bluetooth Desativado",
+          "Por favor, ative o Bluetooth do seu celular nas configurações do sistema antes de buscar o ESP."
+        );
+        return;
+      }
+
+    };
+  };
+
+
+
+  // Se estiver tudo certo, dispara a busca real
+  iniciarEscaneamento();
+}
+
+return (
+  <View style={styles.container} {...swipe.panHandlers}>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <PageHeader
+        title="Configurações"
+        subtitle="Gerencie a conexão Bluetooth e o ESP do tanque."
+      />
+
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View>
+            <Text style={styles.cardTitle}>Bluetooth</Text>
+            <Text style={styles.cardDescription}>
+              Status da conexão Bluetooth do celular
+            </Text>
+          </View>
+
+          <View
+            style={[
+              styles.statusDot,
+              bluetoothEnabled ? styles.statusOn : styles.statusOff,
+            ]}
+          />
+        </View>
+
+        <Pressable style={styles.bluetoothButton} onPress={handleBluetoothPress}>
+          <Ionicons name="bluetooth" size={22} color="#FFFFFF" />
+          <Text style={styles.buttonText}>Bluetooth desligado</Text>
+        </Pressable>
+
+        <Text style={styles.infoText}>
+          O Bluetooth real será ativado futuramente para conexão com o ESP.
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Dispositivo ESP</Text>
+        <Text style={styles.cardDescription}>
+          Busque e conecte o ESP responsável pelo monitoramento.
+        </Text>
+
+        <Pressable style={styles.disabledButton} onPress={handleSearchEsp}>
+          <Ionicons name="search-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.buttonText}>Buscar ESP</Text>
+        </Pressable>
+
+        <View style={styles.emptyDeviceBox}>
+          <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
+          <Text style={styles.emptyDeviceText}>
+            Nenhum ESP encontrado no momento
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>ESP conectado</Text>
+
+        {connectedDevice ? (
+          <View style={styles.connectedBox}>
+            <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
             <View>
-              <Text style={styles.cardTitle}>Bluetooth</Text>
-              <Text style={styles.cardDescription}>
-                Status da conexão Bluetooth do celular
-              </Text>
+              <Text style={styles.connectedName}>{connectedDevice}</Text>
+              <Text style={styles.connectedId}>Dispositivo ativo</Text>
             </View>
+          </View>
+        ) : (
+          <View style={styles.notConnectedBox}>
+            <Ionicons name="close-circle-outline" size={24} color="#B30000" />
+            <Text style={styles.notConnectedText}>Nenhum ESP conectado</Text>
+          </View>
+        )}
+      </View>
 
-            <View
-              style={[
-                styles.statusDot,
-                bluetoothEnabled ? styles.statusOn : styles.statusOff,
-              ]}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Sobre o aplicativo</Text>
+
+        <View style={styles.versionRow}>
+          <View style={styles.versionIcon}>
+            <Ionicons
+              name="information-circle-outline"
+              size={22}
+              color="#B30000"
             />
           </View>
 
-          <Pressable style={styles.bluetoothButton} onPress={handleBluetoothPress}>
-            <Ionicons name="bluetooth" size={22} color="#FFFFFF" />
-            <Text style={styles.buttonText}>Bluetooth desligado</Text>
-          </Pressable>
-
-          <Text style={styles.infoText}>
-            O Bluetooth real será ativado futuramente para conexão com o ESP.
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Dispositivo ESP</Text>
-          <Text style={styles.cardDescription}>
-            Busque e conecte o ESP responsável pelo monitoramento.
-          </Text>
-
-          <Pressable style={styles.disabledButton} onPress={handleSearchEsp}>
-            <Ionicons name="search-outline" size={20} color="#FFFFFF" />
-            <Text style={styles.buttonText}>Buscar ESP</Text>
-          </Pressable>
-
-          <View style={styles.emptyDeviceBox}>
-            <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
-            <Text style={styles.emptyDeviceText}>
-              Nenhum ESP encontrado no momento
-            </Text>
+          <View>
+            <Text style={styles.versionLabel}>Versão do app</Text>
+            <Text style={styles.versionValue}>v{appVersion}</Text>
           </View>
         </View>
+      </View>
+    </ScrollView>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>ESP conectado</Text>
-
-          {connectedDevice ? (
-            <View style={styles.connectedBox}>
-              <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
-              <View>
-                <Text style={styles.connectedName}>{connectedDevice}</Text>
-                <Text style={styles.connectedId}>Dispositivo ativo</Text>
-              </View>
-            </View>
-          ) : (
-            <View style={styles.notConnectedBox}>
-              <Ionicons name="close-circle-outline" size={24} color="#B30000" />
-              <Text style={styles.notConnectedText}>Nenhum ESP conectado</Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Sobre o aplicativo</Text>
-
-          <View style={styles.versionRow}>
-            <View style={styles.versionIcon}>
-              <Ionicons
-                name="information-circle-outline"
-                size={22}
-                color="#B30000"
-              />
-            </View>
-
-            <View>
-              <Text style={styles.versionLabel}>Versão do app</Text>
-              <Text style={styles.versionValue}>v{appVersion}</Text>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
-
-      <BottomNav />
-    </View>
-  );
+    <BottomNav />
+  </View>
+);
 }
 
 const styles = StyleSheet.create({

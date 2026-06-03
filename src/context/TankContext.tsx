@@ -9,7 +9,9 @@ type TankContextType = {
   currentLiters: number;
   maxLiters: number;
   percentage: number;
+  LitersConsumed: number;
   serveBeer: (ml: number) => void;
+  ProcessamentoDeDados: (dado: string) => void;
 };
 
 const TankContext = createContext<TankContextType>(
@@ -29,6 +31,15 @@ export function TankProvider({
   const percentage =
     (currentLiters / maxLiters) * 100;
 
+  const LitersConsumed = maxLiters - currentLiters;
+  function ProcessamentoDeDados(dado: string) {
+    if (dado.startsWith("CONSUMO:")) {
+      const ml = parseInt(dado.split(":")[1], 10);
+      if (!isNaN(ml)) {
+        serveBeer(ml); // Usa estritamente a sua função original
+      }
+    }
+  }
   function serveBeer(ml: number) {
     const litersToRemove = ml / 1000;
 
@@ -39,6 +50,8 @@ export function TankProvider({
     });
   }
 
+
+
   return (
     <TankContext.Provider
       value={{
@@ -46,6 +59,8 @@ export function TankProvider({
         maxLiters,
         percentage,
         serveBeer,
+        ProcessamentoDeDados,
+        LitersConsumed,
       }}
     >
       {children}

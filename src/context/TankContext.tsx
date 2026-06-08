@@ -26,23 +26,22 @@ const MAX_LITERS = 20;
 export function TankProvider({ children }: { children: ReactNode }) {
   const [currentLiters, setCurrentLiters] = useState(MAX_LITERS);
 
-  // Novos estados globais para telemetria do hardware
+  // Estados de Telemetria
   const [temperaturaAtual, setTemperaturaAtual] = useState<number>(0.0);
   const [statusTanque, setStatusTanque] = useState<string>("Desconectado");
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState<string>("Sem leituras");
 
+  // Cálculos derivados (auto-atualizáveis)
   const percentage = (currentLiters / MAX_LITERS) * 100;
   const litersConsumed = MAX_LITERS - currentLiters;
 
   const serveBeer = useCallback((ml: number) => {
-    const litersToRemove = ml / 1000;
     setCurrentLiters((prev) => {
-      const updated = prev - litersToRemove;
+      const updated = prev - (ml / 1000);
       return updated < 0 ? 0 : updated;
     });
   }, []);
 
-  // Centraliza a geração do timestamp de leitura estável
   const capturarTimestamp = useCallback(() => {
     return new Date().toLocaleTimeString("pt-BR", {
       hour: "2-digit",
@@ -51,14 +50,14 @@ export function TankProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // PARSER DE DADOS SERIAL BLE: Sabe identificar o tipo de dado pelo prefixo
+  // O "Parser" que interpreta o que o ESP32 manda
   const processamentoDeDados = useCallback(
     (dado: string) => {
       const dadoLimpo = dado.trim();
       if (!dadoLimpo) return;
 
       const partes = dadoLimpo.split(":");
-      if (partes.length !== 2) return; // Ignora pacotes corrompidos ou mal formatados
+      if (partes.length !== 2) return;
 
       const [prefixo, valor] = partes;
 
@@ -84,9 +83,6 @@ export function TankProvider({ children }: { children: ReactNode }) {
           setUltimaAtualizacao(capturarTimestamp());
           break;
         }
-        default:
-          console.warn(`Prefixo BLE desconhecido recebido: ${prefixo}`);
-          break;
       }
     },
     [serveBeer, capturarTimestamp]

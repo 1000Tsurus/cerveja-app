@@ -4,7 +4,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import BottomNav from "../components/BottomNav";
 import PageHeader from "../components/PageHeader";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
-import { useBle } from "../hooks/useBle"; // Certifique-se de que o caminho está correto
+import { useBle } from "../Provider/useBle";
 
 export default function Config() {
   const swipe = useSwipeNavigation("/controle", "/perfil");
@@ -14,7 +14,6 @@ export default function Config() {
     estaEscaneando,
     statusConexao,
     iniciarEscaneamento,
-    enviarComandoPino,
   } = useBle();
 
   // Tratamento de caixa de string para evitar problemas de case-sensitive ("Conectado")

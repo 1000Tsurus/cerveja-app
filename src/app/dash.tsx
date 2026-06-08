@@ -8,18 +8,16 @@ import { useTank } from "../context/TankContext";
 export default function Dash() {
   const swipe = useSwipeNavigation("/perfil", "/home");
 
-  const { currentLiters, percentage } = useTank();
-
-  const tanque = {
-    nome: "Tanque Total",
-    temperatura: "4.8°C",
-    volumeAtual: `${currentLiters.toFixed(2)} L`,
-    volumeFaltante: `${(20 - currentLiters).toFixed(2)} L`,
-    capacidadeTotal: "20 L",
-    status: "Estável",
-    ultimaAtualizacao: "Agora mesmo",
-    percentualAtual: percentage,
-  };
+  // Puxando TODAS as variáveis reais do hardware através do Contexto Global
+  const {
+    currentLiters,
+    maxLiters,
+    percentage,
+    litersConsumed,
+    temperaturaAtual,
+    statusTanque,
+    ultimaAtualizacao
+  } = useTank();
 
   return (
     <View style={styles.container} {...swipe.panHandlers}>
@@ -27,20 +25,30 @@ export default function Dash() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-      <PageHeader
-        title="Dashboard"
-        subtitle="Monitoramento do tanque em tempo real"
-      />
+        <PageHeader
+          title="Dashboard"
+          subtitle="Monitoramento do tanque em tempo real"
+        />
 
         <View style={styles.mainCard}>
           <View style={styles.mainHeader}>
             <View>
               <Text style={styles.tankLabel}>Tanque monitorado</Text>
-              <Text style={styles.tankName}>{tanque.nome}</Text>
+              <Text style={styles.tankName}>Tanque de Brassagem</Text>
             </View>
 
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>{tanque.status}</Text>
+            <View style={[
+              styles.statusBadge,
+              statusTanque === "Aquecendo" ? { backgroundColor: "#FFF4E5" } :
+                statusTanque === "Alerta" ? { backgroundColor: "#FDE8E8" } : {}
+            ]}>
+              <Text style={[
+                styles.statusText,
+                statusTanque === "Aquecendo" ? { color: "#E65100" } :
+                  statusTanque === "Alerta" ? { color: "#B30000" } : {}
+              ]}>
+                {statusTanque || "Desconectado"}
+              </Text>
             </View>
           </View>
 
@@ -50,7 +58,7 @@ export default function Dash() {
                 <Ionicons name="thermometer-outline" size={22} color="#B30000" />
               </View>
               <Text style={styles.metricLabel}>Temperatura</Text>
-              <Text style={styles.metricValue}>{tanque.temperatura}</Text>
+              <Text style={styles.metricValue}>{temperaturaAtual}°C</Text>
             </View>
 
             <View style={styles.metricCard}>
@@ -58,24 +66,24 @@ export default function Dash() {
                 <Ionicons name="beer-outline" size={22} color="#B30000" />
               </View>
               <Text style={styles.metricLabel}>Volume Consumido</Text>
-              <Text style={styles.metricValue}>{tanque.volumeFaltante}</Text>
+              <Text style={styles.metricValue}>{litersConsumed.toFixed(2)} L</Text>
             </View>
           </View>
 
           <View style={styles.progressSection}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressTitle}>Nível atual</Text>
-              <Text style={styles.progressPercent}>{tanque.percentualAtual.toFixed(2)}%</Text>
+              <Text style={styles.progressPercent}>{percentage.toFixed(2)}%</Text>
             </View>
 
             <View style={styles.progressTrack}>
               <View
-                style={[styles.progressFill, { width: `${tanque.percentualAtual.toFixed(2)}%` as `${number}%`}]}
+                style={[styles.progressFill, { width: `${percentage.toFixed(2)}%` as `${number}%` }]}
               />
             </View>
 
             <Text style={styles.progressInfo}>
-              Volume atual: {tanque.volumeAtual} de {tanque.capacidadeTotal}
+              Volume atual: {currentLiters.toFixed(2)} L de {maxLiters} L
             </Text>
           </View>
         </View>
@@ -85,32 +93,32 @@ export default function Dash() {
 
           <View style={styles.tableRow}>
             <Text style={styles.tableLabel}>Temperatura atual</Text>
-            <Text style={styles.tableValue}>{tanque.temperatura}</Text>
+            <Text style={styles.tableValue}>{temperaturaAtual}°C</Text>
           </View>
 
           <View style={styles.tableRow}>
             <Text style={styles.tableLabel}>Volume atual</Text>
-            <Text style={styles.tableValue}>{tanque.volumeAtual}</Text>
+            <Text style={styles.tableValue}>{currentLiters.toFixed(2)} L</Text>
           </View>
 
           <View style={styles.tableRow}>
             <Text style={styles.tableLabel}>Volume Consumido</Text>
-            <Text style={styles.tableValue}>{tanque.volumeFaltante}</Text>
+            <Text style={styles.tableValue}>{litersConsumed.toFixed(2)} L</Text>
           </View>
 
           <View style={styles.tableRow}>
             <Text style={styles.tableLabel}>Capacidade total</Text>
-            <Text style={styles.tableValue}>{tanque.capacidadeTotal}</Text>
+            <Text style={styles.tableValue}>{maxLiters} L</Text>
           </View>
 
           <View style={styles.tableRow}>
-            <Text style={styles.tableLabel}>Status</Text>
-            <Text style={styles.tableValue}>{tanque.status}</Text>
+            <Text style={styles.tableLabel}>Status da conexão</Text>
+            <Text style={styles.tableValue}>{statusTanque || "Aguardando..."}</Text>
           </View>
 
           <View style={[styles.tableRow, styles.tableRowLast]}>
-            <Text style={styles.tableLabel}>Última atualização</Text>
-            <Text style={styles.tableValue}>{tanque.ultimaAtualizacao}</Text>
+            <Text style={styles.tableLabel}>Última leitura BLE</Text>
+            <Text style={styles.tableValue}>{ultimaAtualizacao}</Text>
           </View>
         </View>
       </ScrollView>

@@ -77,14 +77,12 @@ export function TankProvider({
     const litersToRemove = ml / 1000;
 
   const serveBeer = useCallback((ml: number) => {
-    const litersToRemove = ml / 1000;
     setCurrentLiters((prev) => {
-      const updated = prev - litersToRemove;
+      const updated = prev - (ml / 1000);
       return updated < 0 ? 0 : updated;
     });
   }, []);
 
-  // Centraliza a geração do timestamp de leitura estável
   const capturarTimestamp = useCallback(() => {
     return new Date().toLocaleTimeString("pt-BR", {
       hour: "2-digit",
@@ -93,14 +91,14 @@ export function TankProvider({
     });
   }, []);
 
-  // PARSER DE DADOS SERIAL BLE: Sabe identificar o tipo de dado pelo prefixo
+  // O "Parser" que interpreta o que o ESP32 manda
   const processamentoDeDados = useCallback(
     (dado: string) => {
       const dadoLimpo = dado.trim();
       if (!dadoLimpo) return;
 
       const partes = dadoLimpo.split(":");
-      if (partes.length !== 2) return; // Ignora pacotes corrompidos ou mal formatados
+      if (partes.length !== 2) return;
 
       const [prefixo, valor] = partes;
 
@@ -126,9 +124,6 @@ export function TankProvider({
           setUltimaAtualizacao(capturarTimestamp());
           break;
         }
-        default:
-          console.warn(`Prefixo BLE desconhecido recebido: ${prefixo}`);
-          break;
       }
     },
     [serveBeer, capturarTimestamp]

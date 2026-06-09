@@ -15,6 +15,7 @@
     "@react-navigation/native": "^7.1.18",
     "expo": "~56.0.0",
     "expo-constants": "~56.0.16",
+    "expo-dev-client": "~56.0.18",
     "expo-font": "~56.0.5",
     "expo-linear-gradient": "~56.0.4",
     "expo-linking": "~56.0.12",
@@ -25,6 +26,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.85.3",
+    "react-native-ble-plx": "^3.5.1",
     "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
@@ -32,6 +34,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.14",
+    "@types/react-native-base64": "^0.2.2",
     "typescript": "~6.0.3"
   }
 }

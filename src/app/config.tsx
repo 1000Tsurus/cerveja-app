@@ -4,12 +4,25 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import BottomNav from "../components/BottomNav";
 import PageHeader from "../components/PageHeader";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
+import { useBle } from "../Provider/useBle";
 
 export default function Config() {
   const swipe = useSwipeNavigation("/controle", "/perfil");
 
-  const bluetoothEnabled = false;
-  const connectedDevice: string | null = null;
+  const {
+    dispositivoConectado,
+    estaEscaneando,
+    statusConexao,
+    iniciarEscaneamento,
+  } = useBle();
+
+  // Tratamento de caixa de string para evitar problemas de case-sensitive ("Conectado")
+  const bluetoothEnabled =
+    statusConexao === "Conectado" ||
+    estaEscaneando ||
+    statusConexao === "Descobrindo Dispositivo...";
+
+  const connectedDevice = dispositivoConectado?.name ?? dispositivoConectado?.localName ?? null;
 
   const appVersion =
     Constants.expoConfig?.version ??
@@ -17,17 +30,30 @@ export default function Config() {
     "1.0.0";
 
   function handleBluetoothPress() {
-    Alert.alert(
-      "Bluetooth desativado",
-      "A conexão Bluetooth real ainda não está ativada neste app. Quando você for usar com o ESP, ativamos a biblioteca BLE."
-    );
+    if (statusConexao === "Conectado") {
+      Alert.alert(
+        "Bluetooth ativo",
+        "O aplicativo se conectou com o Dispositivo"
+      );
+    } else {
+      Alert.alert(
+        "Bluetooth desativado",
+        `Status atual: ${statusConexao}. Use o botão de busca abaixo.`
+      );
+    }
   }
 
   function handleSearchEsp() {
-    Alert.alert(
-      "Busca indisponível",
-      "A busca por ESP está desativada por enquanto. Essa função será conectada ao Bluetooth real depois."
-    );
+    if (statusConexao === "Bluetooth desligado") {
+      Alert.alert(
+        "Bluetooth Desativado",
+        "Por favor, ative o Bluetooth do seu celular nas configurações do sistema antes de buscar o ESP."
+      );
+      return;
+    }
+
+    // Dispara o escaneamento nativo apenas sob ação do clique do usuário
+    iniciarEscaneamento();
   }
 
   return (
@@ -41,6 +67,7 @@ export default function Config() {
           subtitle="Gerencie a conexão Bluetooth e o ESP do tanque."
         />
 
+        {/* CARD 1: BLUETOOTH STATUS */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View>
@@ -58,44 +85,63 @@ export default function Config() {
             />
           </View>
 
-          <Pressable style={styles.bluetoothButton} onPress={handleBluetoothPress}>
+          <Pressable
+            style={[
+              styles.bluetoothButton,
+              bluetoothEnabled && { backgroundColor: "#1F8A46" }
+            ]}
+            onPress={handleBluetoothPress}
+          >
             <Ionicons name="bluetooth" size={22} color="#FFFFFF" />
-            <Text style={styles.buttonText}>Bluetooth desligado</Text>
+            <Text style={styles.buttonText}>
+              {statusConexao === "Conectado" ? "Bluetooth conectado" : `Status: ${statusConexao}`}
+            </Text>
           </Pressable>
 
           <Text style={styles.infoText}>
-            O Bluetooth real será ativado futuramente para conexão com o ESP.
+            Comunicação via canal serial BLE ativo para escuta de dados e processamento no pino lógico.
           </Text>
         </View>
 
+        {/* CARD 2: DISPOSITIVO ESP (TRIGGER BUSCA) */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Dispositivo ESP</Text>
           <Text style={styles.cardDescription}>
-            Busque e conecte o ESP responsável pelo monitoramento.
+            Busque e conecte o ESP responsible pelo monitoramento.
           </Text>
 
-          <Pressable style={styles.disabledButton} onPress={handleSearchEsp}>
+          <Pressable
+            style={[
+              styles.disabledButton,
+              !estaEscaneando && statusConexao !== "Conectado" && { backgroundColor: "#1565c0" }
+            ]}
+            onPress={handleSearchEsp}
+            disabled={estaEscaneando || statusConexao === "Conectado"}
+          >
             <Ionicons name="search-outline" size={20} color="#FFFFFF" />
-            <Text style={styles.buttonText}>Buscar ESP</Text>
+            <Text style={styles.buttonText}>
+              {estaEscaneando ? "Buscando..." : "Buscar ESP"}
+            </Text>
           </Pressable>
 
           <View style={styles.emptyDeviceBox}>
             <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
             <Text style={styles.emptyDeviceText}>
-              Nenhum ESP encontrado no momento
+              {estaEscaneando ? "Escaneando dispositivos próximos..." : "Nenhum ESP pareado nesta sessão"}
             </Text>
           </View>
         </View>
 
+        {/* CARD 3: DISPOSITIVO CONECTADO FEEDBACK */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>ESP conectado</Text>
 
-          {connectedDevice ? (
+          {dispositivoConectado ? (
             <View style={styles.connectedBox}>
               <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
               <View>
-                <Text style={styles.connectedName}>{connectedDevice}</Text>
-                <Text style={styles.connectedId}>Dispositivo ativo</Text>
+                <Text style={styles.connectedName}>{connectedDevice || "ESP32-Cerveja"}</Text>
+                <Text style={styles.connectedId}>ID: {dispositivoConectado.id}</Text>
               </View>
             </View>
           ) : (
@@ -106,6 +152,7 @@ export default function Config() {
           )}
         </View>
 
+        {/* CARD 4: SOBRE */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Sobre o aplicativo</Text>
 
@@ -131,6 +178,7 @@ export default function Config() {
   );
 }
 
+// Mantendo exatamente a folha de estilos original do seu arquivo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -296,4 +344,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#151515",
   },
-});
+})

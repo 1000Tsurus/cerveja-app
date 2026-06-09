@@ -1,34 +1,31 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import Constants from "expo-constants";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import BottomNav from "../components/BottomNav";
 import PageHeader from "../components/PageHeader";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import Constants from "expo-constants";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useBluetoothClassic } from "../context/BluetoothClassicContext";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
 
 export default function Config() {
   const swipe = useSwipeNavigation("/controle", "/perfil");
 
-  const bluetoothEnabled = false;
-  const connectedDevice: string | null = null;
+  const {
+    bluetoothAvailable,
+    bluetoothEnabled,
+    isScanning,
+    devices,
+    connectedDevice,
+    lastMessage,
+    requestEnableBluetooth,
+    scanDevices,
+    connectToDevice,
+    disconnectDevice,
+  } = useBluetoothClassic();
 
   const appVersion =
     Constants.expoConfig?.version ??
     Constants.nativeApplicationVersion ??
     "1.0.0";
-
-  function handleBluetoothPress() {
-    Alert.alert(
-      "Bluetooth desativado",
-      "A conexão Bluetooth real ainda não está ativada neste app. Quando você for usar com o ESP, ativamos a biblioteca BLE."
-    );
-  }
-
-  function handleSearchEsp() {
-    Alert.alert(
-      "Busca indisponível",
-      "A busca por ESP está desativada por enquanto. Essa função será conectada ao Bluetooth real depois."
-    );
-  }
 
   return (
     <View style={styles.container} {...swipe.panHandlers}>
@@ -38,13 +35,13 @@ export default function Config() {
       >
         <PageHeader
           title="Configurações"
-          subtitle="Gerencie a conexão Bluetooth e o ESP do tanque."
+          subtitle="Bluetooth, ESP e informações do app."
         />
 
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View>
-              <Text style={styles.cardTitle}>Bluetooth</Text>
+              <Text style={styles.cardTitle}>Bluetooth clássico</Text>
               <Text style={styles.cardDescription}>
                 Status da conexão Bluetooth do celular
               </Text>
@@ -58,46 +55,106 @@ export default function Config() {
             />
           </View>
 
-          <Pressable style={styles.bluetoothButton} onPress={handleBluetoothPress}>
+          <Pressable
+            style={[
+              styles.primaryButton,
+              bluetoothEnabled ? styles.buttonSuccess : styles.buttonDanger,
+            ]}
+            onPress={requestEnableBluetooth}
+          >
             <Ionicons name="bluetooth" size={22} color="#FFFFFF" />
-            <Text style={styles.buttonText}>Bluetooth desligado</Text>
+            <Text style={styles.buttonText}>
+              {bluetoothEnabled ? "Bluetooth ativo" : "Ativar Bluetooth"}
+            </Text>
           </Pressable>
 
           <Text style={styles.infoText}>
-            O Bluetooth real será ativado futuramente para conexão com o ESP.
+            {bluetoothAvailable
+              ? "Bluetooth disponível neste aparelho."
+              : "Bluetooth não disponível neste aparelho."}
           </Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Dispositivo ESP</Text>
+          <Text style={styles.cardTitle}>Dispositivos ESP</Text>
           <Text style={styles.cardDescription}>
-            Busque e conecte o ESP responsável pelo monitoramento.
+            Busque o ESP32 e toque no dispositivo para conectar.
           </Text>
 
-          <Pressable style={styles.disabledButton} onPress={handleSearchEsp}>
-            <Ionicons name="search-outline" size={20} color="#FFFFFF" />
-            <Text style={styles.buttonText}>Buscar ESP</Text>
+          <Pressable style={styles.scanButton} onPress={scanDevices}>
+            <Ionicons
+              name={isScanning ? "sync-outline" : "search-outline"}
+              size={20}
+              color="#FFFFFF"
+            />
+            <Text style={styles.buttonText}>
+              {isScanning ? "Buscando..." : "Buscar ESP"}
+            </Text>
           </Pressable>
 
-          <View style={styles.emptyDeviceBox}>
-            <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
-            <Text style={styles.emptyDeviceText}>
-              Nenhum ESP encontrado no momento
-            </Text>
-          </View>
+          {devices.length === 0 ? (
+            <View style={styles.emptyDeviceBox}>
+              <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
+              <Text style={styles.emptyDeviceText}>
+                Nenhum ESP encontrado. Pareie o ESP no Bluetooth do celular se necessário.
+              </Text>
+            </View>
+          ) : (
+            devices.map((device) => (
+              <Pressable
+                key={device.address ?? device.id}
+                style={styles.deviceItem}
+                onPress={() => connectToDevice(device)}
+              >
+                <View style={styles.deviceIcon}>
+                  <Ionicons
+                    name="hardware-chip-outline"
+                    size={20}
+                    color="#B30000"
+                  />
+                </View>
+
+                <View style={styles.deviceInfo}>
+                  <Text style={styles.deviceName}>
+                    {device.name ?? "Dispositivo sem nome"}
+                  </Text>
+                  <Text style={styles.deviceId}>
+                    {device.address ?? device.id}
+                  </Text>
+                </View>
+
+                <Ionicons name="chevron-forward" size={20} color="#999999" />
+              </Pressable>
+            ))
+          )}
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>ESP conectado</Text>
 
           {connectedDevice ? (
-            <View style={styles.connectedBox}>
-              <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
-              <View>
-                <Text style={styles.connectedName}>{connectedDevice}</Text>
-                <Text style={styles.connectedId}>Dispositivo ativo</Text>
+            <>
+              <View style={styles.connectedBox}>
+                <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
+
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.connectedName}>
+                    {connectedDevice.name ?? "ESP conectado"}
+                  </Text>
+                  <Text style={styles.connectedId}>
+                    {connectedDevice.address ?? connectedDevice.id}
+                  </Text>
+                </View>
               </View>
-            </View>
+
+              {lastMessage ? (
+                <Text style={styles.lastMessage}>Última resposta: {lastMessage}</Text>
+              ) : null}
+
+              <Pressable style={styles.disconnectButton} onPress={disconnectDevice}>
+                <Text style={styles.disconnectText}>Desconectar</Text>
+              </Pressable>
+            </>
           ) : (
             <View style={styles.notConnectedBox}>
               <Ionicons name="close-circle-outline" size={24} color="#B30000" />
@@ -141,17 +198,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 140,
   },
-  title: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: "#151515",
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: "#6B7280",
-    marginBottom: 22,
-  },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 22,
@@ -190,7 +236,7 @@ const styles = StyleSheet.create({
   statusOff: {
     backgroundColor: "#B30000",
   },
-  bluetoothButton: {
+  primaryButton: {
     marginTop: 12,
     flexDirection: "row",
     alignItems: "center",
@@ -198,9 +244,14 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 14,
     borderRadius: 14,
+  },
+  buttonSuccess: {
+    backgroundColor: "#1F8A46",
+  },
+  buttonDanger: {
     backgroundColor: "#B30000",
   },
-  disabledButton: {
+  scanButton: {
     marginTop: 4,
     marginBottom: 14,
     flexDirection: "row",
@@ -209,7 +260,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: "#999999",
+    backgroundColor: "#B30000",
   },
   buttonText: {
     color: "#FFFFFF",
@@ -235,6 +286,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#777777",
     fontWeight: "600",
+    textAlign: "center",
+  },
+  deviceItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#EFEFEF",
+  },
+  deviceIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: "rgba(179,0,0,0.08)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  deviceInfo: {
+    flex: 1,
+  },
+  deviceName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#151515",
+  },
+  deviceId: {
+    fontSize: 11,
+    color: "#8A8A8A",
+    marginTop: 2,
   },
   connectedBox: {
     marginTop: 10,
@@ -254,6 +335,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#477A59",
     marginTop: 2,
+  },
+  lastMessage: {
+    marginTop: 10,
+    fontSize: 13,
+    color: "#6B7280",
+  },
+  disconnectButton: {
+    marginTop: 14,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: "#FDE8E8",
+    alignItems: "center",
+  },
+  disconnectText: {
+    color: "#B30000",
+    fontWeight: "700",
   },
   notConnectedBox: {
     marginTop: 10,

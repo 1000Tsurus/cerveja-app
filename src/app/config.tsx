@@ -5,27 +5,57 @@ import Constants from "expo-constants";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useBluetoothClassic } from "../context/BluetoothClassicContext";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
+import { useBle } from "../Provider/useBle";
 
 export default function Config() {
   const swipe = useSwipeNavigation("/controle", "/perfil");
 
   const {
-    bluetoothAvailable,
-    bluetoothEnabled,
-    isScanning,
-    devices,
-    connectedDevice,
-    lastMessage,
-    requestEnableBluetooth,
-    scanDevices,
-    connectToDevice,
-    disconnectDevice,
-  } = useBluetoothClassic();
+    dispositivoConectado,
+    estaEscaneando,
+    statusConexao,
+    iniciarEscaneamento,
+  } = useBle();
+
+  // Tratamento de caixa de string para evitar problemas de case-sensitive ("Conectado")
+  const bluetoothEnabled =
+    statusConexao === "Conectado" ||
+    estaEscaneando ||
+    statusConexao === "Descobrindo Dispositivo...";
+
+  const connectedDevice = dispositivoConectado?.name ?? dispositivoConectado?.localName ?? null;
 
   const appVersion =
     Constants.expoConfig?.version ??
     Constants.nativeApplicationVersion ??
     "1.0.0";
+
+  function handleBluetoothPress() {
+    if (statusConexao === "Conectado") {
+      Alert.alert(
+        "Bluetooth ativo",
+        "O aplicativo se conectou com o Dispositivo"
+      );
+    } else {
+      Alert.alert(
+        "Bluetooth desativado",
+        `Status atual: ${statusConexao}. Use o botão de busca abaixo.`
+      );
+    }
+  }
+
+  function handleSearchEsp() {
+    if (statusConexao === "Bluetooth desligado") {
+      Alert.alert(
+        "Bluetooth Desativado",
+        "Por favor, ative o Bluetooth do seu celular nas configurações do sistema antes de buscar o ESP."
+      );
+      return;
+    }
+
+    // Dispara o escaneamento nativo apenas sob ação do clique do usuário
+    iniciarEscaneamento();
+  }
 
   return (
     <View style={styles.container} {...swipe.panHandlers}>
@@ -38,6 +68,7 @@ export default function Config() {
           subtitle="Bluetooth, ESP e informações do app."
         />
 
+        {/* CARD 1: BLUETOOTH STATUS */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View>
@@ -57,94 +88,61 @@ export default function Config() {
 
           <Pressable
             style={[
-              styles.primaryButton,
-              bluetoothEnabled ? styles.buttonSuccess : styles.buttonDanger,
+              styles.bluetoothButton,
+              bluetoothEnabled && { backgroundColor: "#1F8A46" }
             ]}
-            onPress={requestEnableBluetooth}
+            onPress={handleBluetoothPress}
           >
             <Ionicons name="bluetooth" size={22} color="#FFFFFF" />
             <Text style={styles.buttonText}>
-              {bluetoothEnabled ? "Bluetooth ativo" : "Ativar Bluetooth"}
+              {statusConexao === "Conectado" ? "Bluetooth conectado" : `Status: ${statusConexao}`}
             </Text>
           </Pressable>
 
           <Text style={styles.infoText}>
-            {bluetoothAvailable
-              ? "Bluetooth disponível neste aparelho."
-              : "Bluetooth não disponível neste aparelho."}
+            Comunicação via canal serial BLE ativo para escuta de dados e processamento no pino lógico.
           </Text>
         </View>
 
+        {/* CARD 2: DISPOSITIVO ESP (TRIGGER BUSCA) */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Dispositivos ESP</Text>
           <Text style={styles.cardDescription}>
-            Busque o ESP32 e toque no dispositivo para conectar.
+            Busque e conecte o ESP responsible pelo monitoramento.
           </Text>
 
-          <Pressable style={styles.scanButton} onPress={scanDevices}>
-            <Ionicons
-              name={isScanning ? "sync-outline" : "search-outline"}
-              size={20}
-              color="#FFFFFF"
-            />
+          <Pressable
+            style={[
+              styles.disabledButton,
+              !estaEscaneando && statusConexao !== "Conectado" && { backgroundColor: "#1565c0" }
+            ]}
+            onPress={handleSearchEsp}
+            disabled={estaEscaneando || statusConexao === "Conectado"}
+          >
+            <Ionicons name="search-outline" size={20} color="#FFFFFF" />
             <Text style={styles.buttonText}>
-              {isScanning ? "Buscando..." : "Buscar ESP"}
+              {estaEscaneando ? "Buscando..." : "Buscar ESP"}
             </Text>
           </Pressable>
 
-          {devices.length === 0 ? (
-            <View style={styles.emptyDeviceBox}>
-              <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
-              <Text style={styles.emptyDeviceText}>
-                Nenhum ESP encontrado. Pareie o ESP no Bluetooth do celular se necessário.
-              </Text>
-            </View>
-          ) : (
-            devices.map((device) => (
-              <Pressable
-                key={device.address ?? device.id}
-                style={styles.deviceItem}
-                onPress={() => connectToDevice(device)}
-              >
-                <View style={styles.deviceIcon}>
-                  <Ionicons
-                    name="hardware-chip-outline"
-                    size={20}
-                    color="#B30000"
-                  />
-                </View>
-
-                <View style={styles.deviceInfo}>
-                  <Text style={styles.deviceName}>
-                    {device.name ?? "Dispositivo sem nome"}
-                  </Text>
-                  <Text style={styles.deviceId}>
-                    {device.address ?? device.id}
-                  </Text>
-                </View>
-
-                <Ionicons name="chevron-forward" size={20} color="#999999" />
-              </Pressable>
-            ))
-          )}
+          <View style={styles.emptyDeviceBox}>
+            <Ionicons name="hardware-chip-outline" size={26} color="#999999" />
+            <Text style={styles.emptyDeviceText}>
+              {estaEscaneando ? "Escaneando dispositivos próximos..." : "Nenhum ESP pareado nesta sessão"}
+            </Text>
+          </View>
         </View>
 
+        {/* CARD 3: DISPOSITIVO CONECTADO FEEDBACK */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>ESP conectado</Text>
 
-          {connectedDevice ? (
-            <>
-              <View style={styles.connectedBox}>
-                <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
-
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.connectedName}>
-                    {connectedDevice.name ?? "ESP conectado"}
-                  </Text>
-                  <Text style={styles.connectedId}>
-                    {connectedDevice.address ?? connectedDevice.id}
-                  </Text>
-                </View>
+          {dispositivoConectado ? (
+            <View style={styles.connectedBox}>
+              <Ionicons name="checkmark-circle" size={24} color="#1F8A46" />
+              <View>
+                <Text style={styles.connectedName}>{connectedDevice || "ESP32-Cerveja"}</Text>
+                <Text style={styles.connectedId}>ID: {dispositivoConectado.id}</Text>
               </View>
 
               {lastMessage ? (
@@ -163,6 +161,7 @@ export default function Config() {
           )}
         </View>
 
+        {/* CARD 4: SOBRE */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Sobre o aplicativo</Text>
 
@@ -188,6 +187,7 @@ export default function Config() {
   );
 }
 
+// Mantendo exatamente a folha de estilos original do seu arquivo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -393,4 +393,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#151515",
   },
-});
+})

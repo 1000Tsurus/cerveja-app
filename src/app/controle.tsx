@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import BottomNav from "../components/BottomNav";
 import PageHeader from "../components/PageHeader";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -5,51 +6,85 @@ import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useBluetoothClassic } from "../context/BluetoothClassicContext";
 import { useSwipeNavigation } from "../components/useSwipeNavigation";
+import { useTank } from "../context/TankContext";
+import { useBle } from "../Provider/useBle";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
+import {
+  Alert,
+  Animated,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function Controle() {
-  const swipe = useSwipeNavigation("/cerveja", "/dash");
+  const swipe = useSwipeNavigation("/cerveja", "/config");
+  const { serveBeer } = useTank();
 
-  const { connectedDevice, sendCommand } = useBluetoothClassic();
+  // Consome o estado global do Bluetooth
+  const { enviarComandoPino, statusConexao } = useBle();
 
-  const [volumeMl, setVolumeMl] = useState("300");
-  const [flowMlPerSecond, setFlowMlPerSecond] = useState("50");
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const doseTimeMs = useMemo(() => {
-    const volume = Number(volumeMl.replace(",", "."));
-    const flow = Number(flowMlPerSecond.replace(",", "."));
+  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [selectedDose, setSelectedDose] = useState<number | null>(null);
 
-    if (!volume || !flow || flow <= 0) {
-      return 0;
-    }
+  // Limpeza de segurança (Memory Leak): Mata o cronômetro se a tela for destruída (swipe)
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
-    return Math.round((volume / flow) * 1000);
-  }, [volumeMl, flowMlPerSecond]);
+  async function handlePump(ml: number) {
+    if (loading) return;
 
-  const doseTimeSeconds = doseTimeMs / 1000;
-
-  async function handleStartDose() {
-    if (doseTimeMs <= 0) {
-      Alert.alert(
-        "Dados inválidos",
-        "Informe um volume e uma vazão válidos."
-      );
+    // Trava de Segurança
+    if (statusConexao !== "Conectado") {
+      Alert.alert("Erro de Conexão", "Conecte-se ao ESP32 na aba de Configurações antes de servir.");
       return;
     }
 
-    await sendCommand(`DOSE:${doseTimeMs}`);
+    setSelectedDose(ml);
+    setLoading(true);
+    setProgress(0);
+    progressAnim.setValue(0);
 
-    Alert.alert(
-      "Dosagem enviada",
-      `A bomba ficará ligada por ${doseTimeSeconds.toFixed(1)} segundos.`
-    );
-  }
+    // 1. Envia a ordem direta para o cérebro do ESP32
+    await enviarComandoPino(`DOSE:${ml}`);
 
-  async function handlePumpOn() {
-    await sendCommand("PUMP:ON");
-  }
+    // Os tempos aqui são apenas para a animação visual da UI bater com o hardware
+    const duration =
+      ml === 50 ? 2500 : ml === 250 ? 5000 : 8000;
 
-  async function handlePumpOff() {
-    await sendCommand("PUMP:OFF");
+    Animated.timing(progressAnim, {
+      toValue: 100,
+      duration,
+      useNativeDriver: false,
+    }).start(() => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      setLoading(false);
+      serveBeer(ml); // Atualiza o nível do tanque no contexto
+    });
+
+    // Cronômetro numérico (0 a 100%)
+    intervalRef.current = setInterval(() => {
+      setProgress((prev) => {
+        const next = prev + 1;
+        if (next >= 100) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          return 100;
+        }
+        return next;
+      });
+    }, duration / 100);
   }
 
   return (
@@ -113,43 +148,102 @@ export default function Controle() {
           <View style={styles.resultBox}>
             <Ionicons name="timer-outline" size={26} color="#B30000" />
             <View>
-              <Text style={styles.resultLabel}>Tempo calculado</Text>
-              <Text style={styles.resultValue}>
-                {doseTimeMs > 0 ? `${doseTimeSeconds.toFixed(1)}s` : "--"}
+              <Text style={styles.cardTitle}>
+                Serviço Integrado
+              </Text>
+              <Text style={styles.cardSubtitle}>
+                Escolha a dose desejada.
               </Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Ações da bomba</Text>
-          <Text style={styles.cardSubtitle}>
-            Os comandos serão enviados para o ESP32 via Bluetooth clássico.
+          <View style={styles.buttonsContainer}>
+            {[50, 250, 500].map((dose) => {
+              const isActive = selectedDose === dose;
+
+              const animatedWidth = progressAnim.interpolate({
+                inputRange: [0, 100],
+                outputRange: ["0%", "100%"],
+              });
+
+              const isCompleted = progress >= 100 && isActive;
+
+              return (
+                <Pressable
+                  key={dose}
+                  style={styles.doseButton}
+                  onPress={() => handlePump(dose)}
+                >
+                  {isActive && (
+                    <Animated.View
+                      style={[
+                        styles.fillBackground,
+                        {
+                          width: animatedWidth,
+                          backgroundColor: isCompleted
+                            ? "#1F8A46"
+                            : "#B30000",
+                        },
+                      ]}
+                    />
+                  )}
+
+                  <View style={styles.buttonContent}>
+                    <View style={styles.doseTop}>
+                      <Text
+                        style={[
+                          styles.doseValue,
+                          isActive && styles.activeText,
+                        ]}
+                      >
+                        {dose} ml
+                      </Text>
+
+                      <Text
+                        style={[
+                          styles.percentText,
+                          isActive && styles.activeText,
+                        ]}
+                      >
+                        {isActive ? `${progress}%` : ""}
+                      </Text>
+                    </View>
+
+                    <Text
+                      style={[
+                        styles.doseDescription,
+                        isActive && styles.activeSubText,
+                      ]}
+                    >
+                      {dose === 50
+                        ? "Melhor opção para degustação."
+                        : dose === 250
+                          ? "Quantidade padrão para servir."
+                          : "Dose completa com maior tempo de bomba."}
+                    </Text>
+
+                    <Text
+                      style={[
+                        styles.statusText,
+                        isActive && styles.activeSubText,
+                      ]}
+                    >
+                      {isActive
+                        ? isCompleted
+                          ? "Concluído"
+                          : "Servindo..."
+                        : "Pronto"}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Text style={styles.infoText}>
+            Comandos atrelados via BLE ao acionamento inteligente do ESP32 na bomba d'água.
           </Text>
-
-          <Pressable
-            style={[styles.actionButton, styles.primaryButton]}
-            onPress={handleStartDose}
-          >
-            <Ionicons name="beer-outline" size={22} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Iniciar dosagem</Text>
-          </Pressable>
-
-          <Pressable
-            style={[styles.actionButton, styles.warningButton]}
-            onPress={handlePumpOn}
-          >
-            <Ionicons name="play" size={22} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Ligar bomba</Text>
-          </Pressable>
-
-          <Pressable
-            style={[styles.actionButton, styles.dangerButton]}
-            onPress={handlePumpOff}
-          >
-            <Ionicons name="stop" size={22} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Desligar bomba</Text>
-          </Pressable>
         </View>
       </ScrollView>
 
@@ -168,7 +262,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 140,
   },
-  connectionCard: {
+  card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 22,
     padding: 16,
@@ -182,11 +276,16 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
-  connectionIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 16,
-    backgroundColor: "#F6F7FB",
+  cardTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  iconBox: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    backgroundColor: "rgba(179,0,0,0.08)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -222,27 +321,28 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginBottom: 16,
   },
-  inputGroup: {
-    marginBottom: 14,
+  buttonsContainer: {
+    gap: 14,
   },
-  inputLabel: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#151515",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "#F6F7FB",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#151515",
+  doseButton: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: "#ECECEC",
+    overflow: "hidden",
+    position: "relative",
   },
-  resultBox: {
-    marginTop: 4,
+  fillBackground: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+  },
+  buttonContent: {
+    zIndex: 2,
+    padding: 18,
+  },
+  doseTop: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -250,37 +350,38 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
   },
-  resultLabel: {
-    fontSize: 13,
-    color: "#6B7280",
-  },
-  resultValue: {
-    fontSize: 26,
+  doseValue: {
+    fontSize: 24,
     fontWeight: "800",
     color: "#151515",
   },
-  actionButton: {
-    marginTop: 10,
-    borderRadius: 16,
-    paddingVertical: 15,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
+  percentText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#151515",
   },
-  primaryButton: {
-    backgroundColor: "#1F8A46",
+  doseDescription: {
+    marginTop: 12,
+    fontSize: 13,
+    color: "#6B7280",
+    lineHeight: 18,
   },
-  warningButton: {
-    backgroundColor: "#D97706",
+  statusText: {
+    marginTop: 12,
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#6B7280",
   },
-  dangerButton: {
-    backgroundColor: "#B30000",
-  },
-  actionButtonText: {
+  activeText: {
     color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "800",
+  },
+  activeSubText: {
+    color: "rgba(255,255,255,0.82)",
+  },
+  infoText: {
+    marginTop: 20,
+    fontSize: 13,
+    color: "#6B7280",
+    lineHeight: 20,
   },
 });

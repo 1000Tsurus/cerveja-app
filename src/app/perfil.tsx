@@ -27,7 +27,7 @@ export default function Perfil() {
       name: "Vinícius Ramos",
       role: "Desenvolvimento e Integração do Aplicativo",
       description:
-        "Responsável pela estrutura do aplicativo, integração BLE e desenvolvimento geral do sistema.",
+        "Responsável pelo desenvolvimento e integração do aplicativo do projeto, criando a interface utilizada para apresentar e acompanhar as informações do sistema. Além disso, também contribuiu na produção da cerveja e no processo de engarrafamento, auxiliando nas etapas práticas do Schraderbräu.",
       foto: require("../../assets/images/vini.jpg"),
     },
     {
@@ -35,7 +35,7 @@ export default function Perfil() {
       name: "Nicolas Fagundes",
       role: "Gestão e Documentação¹",
       description:
-        "Responsável pela lógica do servidor e comunicação com os dados do tanque.",
+        "Responsável na gestão e documentação do projeto, auxiliando na organização geral das etapas e no acompanhamento do desenvolvimento do grupo. Além disso, contribuiu com a produção da cerveja, apoiou a integração com o Grafana e exerceu o papel de liderança, ajudando a manter a equipe alinhada durante todo o projeto.",
       foto: require("../../assets/images/nick.jpg"),
     },
     {
@@ -43,15 +43,15 @@ export default function Perfil() {
       name: "Pedro Henrique Strongren",
       role: "Gestão e Documentação²",
       description:
-        "Cuida da experiência visual e organização das interfaces do aplicativo.",
+        "Atua na área de gestão e documentação do projeto, sendo responsável pela elaboração das atas e pelo registro das reuniões e decisões do grupo. Além disso, também contribuiu nas etapas práticas, auxiliando na produção da cerveja artesanal.",
       foto: require("../../assets/images/pedro.jpg"),
     },
     {
       id: 4,
       name: "João Victor Gomes",
-      role: "Documentação e Testes",
+      role: "Documentação e Testes³",
       description:
-        "Desenvolvimento da comunicação do ESP com sensores e controle da bomba.",
+        "Responsável pela elaboração do caderno, registrando as etapas, informações e desenvolvimento do trabalho. Além disso, também contribuiu nas atividades práticas, auxiliando na produção da cerveja artesanal.",
       foto: require("../../assets/images/goveia.jpg"),
     },
     {
@@ -59,7 +59,7 @@ export default function Perfil() {
       name: "Victor de Jesus",
       role: "Planejamento de Manufatura e Montagem",
       description:
-        "Organização da documentação técnica e estrutura do projeto.",
+        "Ficou responsável pela construção da caixa do controlador e pela organização da parte física do sistema. Além disso, auxiliou no desenvolvimento do circuito, contribuiu com a documentação e também participou das etapas práticas da produção da cerveja artesanal.",
       foto: require("../../assets/images/victor.jpg"),
     },
     {
@@ -67,7 +67,7 @@ export default function Perfil() {
       name: "Guilherme Pontes",
       role: "Planejamento Elétrico e Montagem",
       description:
-        "Pesquisa de soluções para automação, sensores e integração IoT.",
+        "Atuou no planejamento elétrico e na montagem do projeto, sendo responsável pelo desenvolvimento do circuito do controlador e do circuito da bomba. Além disso, auxiliou na integração do Bluetooth com o aplicativo, contribuindo para o funcionamento e comunicação do sistema.",
       foto: require("../../assets/images/gpontes.jpg"),
     },
     {
@@ -75,7 +75,7 @@ export default function Perfil() {
       name: "Alvaro Sáteles",
       role: "Planejamento e Desenvolvimento de Arquitetura",
       description:
-        "Responsável pelos testes do aplicativo e validação das funcionalidades.",
+        "Responsável pela criação do dashboard e do site, ajudando a organizar e apresentar as informações do sistema de forma mais visual e acessível. Além disso, também contribuiu nas etapas práticas da produção da cerveja e no processo de engarrafamento.",
       foto: require("../../assets/images/alv.jpg"),
     },
   ];

@@ -724,8 +724,7 @@ export default function Cerveja() {
         <View style={styles.footerNote}>
           <Ionicons name="information-circle-outline" size={22} color="#B30000" />
           <Text style={styles.footerText}>
-            A tela transforma o fluxograma do projeto em uma visualização
-            interativa, adequada para apresentação mobile.
+            Esta página busca demonstrar o fluxograma do projeto, dos produtos usados, e a rede de suprimentos.
           </Text>
         </View>
       </ScrollView>

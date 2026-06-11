@@ -198,7 +198,7 @@ export default function Controle() {
           </View>
 
           <Text style={styles.infoText}>
-            Comandos atrelados via BLE ao acionamento inteligente do ESP32 na bomba d'água.
+            Comandos conectados via bluetooth ao acionamento inteligente no ESP32 ligado a bomba.
           </Text>
         </View>
       </ScrollView>

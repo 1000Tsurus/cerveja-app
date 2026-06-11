@@ -27,7 +27,7 @@ export default function Config() {
   const appVersion =
     Constants.expoConfig?.version ??
     Constants.nativeApplicationVersion ??
-    "1.0.0";
+    "0.0.5";
 
   function handleBluetoothPress() {
     if (statusConexao === "Conectado") {

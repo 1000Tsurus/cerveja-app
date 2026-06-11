@@ -34,7 +34,7 @@ export default function Dash() {
           <View style={styles.mainHeader}>
             <View>
               <Text style={styles.tankLabel}>Tanque monitorado</Text>
-              <Text style={styles.tankName}>Tanque de Brassagem</Text>
+              <Text style={styles.tankName}>Tanque da Cerveja</Text>
             </View>
 
             <View style={[

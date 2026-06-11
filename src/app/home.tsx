@@ -98,8 +98,8 @@ export default function Home() {
   const fillAnim = useRef(new Animated.Value(0)).current;
   const foamAnim = useRef(new Animated.Value(0)).current;
 
-  const foamLoopRef = useRef<Animated.CompositeAnimation | null>(null);
   const fillAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const isFillingRef = useRef(false);
 
   const bubbleAnims = useRef(
     Array.from({ length: 16 }, () => new Animated.Value(0))
@@ -120,15 +120,17 @@ export default function Home() {
     outputRange: [1, 1.04],
   });
 
-  function startAnimation() {
-    fillAnimationRef.current?.stop();
-    foamLoopRef.current?.stop();
+  function fillCup() {
+    if (isFillingRef.current) {
+      return;
+    }
 
+    isFillingRef.current = true;
+
+    fillAnimationRef.current?.stop();
     fillAnim.stopAnimation();
-    foamAnim.stopAnimation();
 
     fillAnim.setValue(0);
-    foamAnim.setValue(0);
 
     const fillAnimation = Animated.timing(fillAnim, {
       toValue: 1,
@@ -136,6 +138,16 @@ export default function Home() {
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     });
+
+    fillAnimationRef.current = fillAnimation;
+
+    fillAnimation.start(() => {
+      isFillingRef.current = false;
+    });
+  }
+
+  useEffect(() => {
+    fillCup();
 
     const foamLoop = Animated.loop(
       Animated.sequence([
@@ -154,15 +166,7 @@ export default function Home() {
       ])
     );
 
-    fillAnimationRef.current = fillAnimation;
-    foamLoopRef.current = foamLoop;
-
-    fillAnimation.start();
     foamLoop.start();
-  }
-
-  useEffect(() => {
-    startAnimation();
 
     const bubbleLoops = bubbleAnims.map((bubble, index) => {
       bubble.setValue(0);
@@ -189,8 +193,8 @@ export default function Home() {
     });
 
     return () => {
+      foamLoop.stop();
       bubbleLoops.forEach((loop) => loop.stop());
-      foamLoopRef.current?.stop();
       fillAnimationRef.current?.stop();
     };
   }, []);
@@ -277,7 +281,7 @@ export default function Home() {
                 styles.restartButton,
                 pressed && styles.buttonPressed,
               ]}
-              onPress={startAnimation}
+              onPress={fillCup}
             >
               <Ionicons name="refresh" size={18} color="#4A120B" />
               <Text style={styles.restartButtonText}>{homeText.buttonText}</Text>

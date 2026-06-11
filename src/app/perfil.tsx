@@ -6,19 +6,14 @@ import { useSwipeNavigation } from "../components/useSwipeNavigation";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, ImageSourcePropType, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 type Member = {
   id: number;
   name: string;
   role: string;
   description: string;
+  foto?: ImageSourcePropType;
 };
 
 export default function Perfil() {
@@ -33,6 +28,7 @@ export default function Perfil() {
       role: "Desenvolvimento e Integração do Aplicativo",
       description:
         "Responsável pela estrutura do aplicativo, integração BLE e desenvolvimento geral do sistema.",
+      foto: require("../../assets/images/vini.jpg"),
     },
     {
       id: 2,
@@ -40,6 +36,7 @@ export default function Perfil() {
       role: "Gestão e Documentação¹",
       description:
         "Responsável pela lógica do servidor e comunicação com os dados do tanque.",
+      foto: require("../../assets/images/nick.jpg"),
     },
     {
       id: 3,
@@ -47,6 +44,7 @@ export default function Perfil() {
       role: "Gestão e Documentação²",
       description:
         "Cuida da experiência visual e organização das interfaces do aplicativo.",
+      foto: require("../../assets/images/pedro.jpg"),
     },
     {
       id: 4,
@@ -54,6 +52,7 @@ export default function Perfil() {
       role: "Documentação e Testes",
       description:
         "Desenvolvimento da comunicação do ESP com sensores e controle da bomba.",
+      foto: require("../../assets/images/goveia.jpg"),
     },
     {
       id: 5,
@@ -61,6 +60,7 @@ export default function Perfil() {
       role: "Planejamento de Manufatura e Montagem",
       description:
         "Organização da documentação técnica e estrutura do projeto.",
+      foto: require("../../assets/images/victor.jpg"),
     },
     {
       id: 6,
@@ -68,6 +68,7 @@ export default function Perfil() {
       role: "Planejamento Elétrico e Montagem",
       description:
         "Pesquisa de soluções para automação, sensores e integração IoT.",
+      foto: require("../../assets/images/gpontes.jpg"),
     },
     {
       id: 7,
@@ -75,6 +76,7 @@ export default function Perfil() {
       role: "Planejamento e Desenvolvimento de Arquitetura",
       description:
         "Responsável pelos testes do aplicativo e validação das funcionalidades.",
+      foto: require("../../assets/images/alv.jpg"),
     },
   ];
 
@@ -117,11 +119,11 @@ export default function Perfil() {
               >
                 <View style={styles.memberTop}>
                   <View style={styles.avatar}>
-                    <Ionicons
-                      name="person"
-                      size={22}
-                      color="#B30000"
-                    />
+                    {member.foto ? (
+                      <Image source={member.foto} style={styles.avatarImage} />
+                    ) : (
+                      <Ionicons name="person" size={22} color="#B30000" />
+                    )}
                   </View>
 
                   <View style={styles.memberInfo}>
@@ -164,6 +166,12 @@ export default function Perfil() {
 }
 
 const styles = StyleSheet.create({
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 18,
+  },
+
   container: {
     flex: 1,
     backgroundColor: "#F6F7FB",
@@ -234,6 +242,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 14,
+    overflow: "hidden",
   },
 
   memberInfo: {

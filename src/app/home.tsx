@@ -27,7 +27,7 @@ const homeText = {
   mainDescription:
     "Controle, monitore e aproveite sua cerveja artesanal com mais praticidade, tecnologia e precisão.",
 
-  buttonText: "Encha o copo",
+  buttonText: "Conhecer o projeto",
 
   presentationTitle: "Sobre o projeto",
   presentationText:
@@ -94,12 +94,12 @@ const bubblePositions = [
 
 export default function Home() {
   const swipe = useSwipeNavigation("/dash");
+  const scrollRef = useRef<ScrollView>(null);
 
   const fillAnim = useRef(new Animated.Value(0)).current;
   const foamAnim = useRef(new Animated.Value(0)).current;
 
   const fillAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
-  const isFillingRef = useRef(false);
 
   const bubbleAnims = useRef(
     Array.from({ length: 16 }, () => new Animated.Value(0))
@@ -120,16 +120,9 @@ export default function Home() {
     outputRange: [1, 1.04],
   });
 
-  function fillCup() {
-    if (isFillingRef.current) {
-      return;
-    }
-
-    isFillingRef.current = true;
-
+  function fillCupOnce() {
     fillAnimationRef.current?.stop();
     fillAnim.stopAnimation();
-
     fillAnim.setValue(0);
 
     const fillAnimation = Animated.timing(fillAnim, {
@@ -140,14 +133,18 @@ export default function Home() {
     });
 
     fillAnimationRef.current = fillAnimation;
+    fillAnimation.start();
+  }
 
-    fillAnimation.start(() => {
-      isFillingRef.current = false;
+  function goToContent() {
+    scrollRef.current?.scrollTo({
+      y: screenHeight * 0.86,
+      animated: true,
     });
   }
 
   useEffect(() => {
-    fillCup();
+    fillCupOnce();
 
     const foamLoop = Animated.loop(
       Animated.sequence([
@@ -202,6 +199,7 @@ export default function Home() {
   return (
     <View style={styles.container} {...swipe.panHandlers}>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -281,9 +279,9 @@ export default function Home() {
                 styles.restartButton,
                 pressed && styles.buttonPressed,
               ]}
-              onPress={fillCup}
+              onPress={goToContent}
             >
-              <Ionicons name="refresh" size={18} color="#4A120B" />
+              <Ionicons name="arrow-down" size={18} color="#4A120B" />
               <Text style={styles.restartButtonText}>{homeText.buttonText}</Text>
             </Pressable>
           </View>

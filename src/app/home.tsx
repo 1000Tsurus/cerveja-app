@@ -43,26 +43,26 @@ const homeText = {
 
   finalTitle: "Sejam Bem-Vindos",
   finalText:
-    "Este é nossa página inicial, espero que gostem do nosso projeto, teve dedicação, empenho, e bastante suor e energia demandados para trazer a máxima de nossas capacidades e um bom trabalho, para nós, e para vocês que estão nos conhecendo.",
+    "Esta é a nossa página inicial. Esperamos que gostem do nosso projeto, que teve dedicação, empenho, suor e energia para entregar o máximo das nossas capacidades e apresentar um bom trabalho para nós e para vocês que estão nos conhecendo.",
 };
 
 const storyBlocks = [
   {
     id: 1,
     title: "Ideia inicial",
-    text: "O Grupo Revelação, detentor da marca Schraderbräu, surgiu com a junção dos integrantes do período diurno com o noturno do curso de Engenharia, achamos interessante explorar ainda mais o conceito de automação, para facilitar ainda mais nossos clientes.",
+    text: "O Grupo Revelação, detentor da marca Schraderbräu, surgiu com a junção dos integrantes do período diurno com o noturno do curso de Engenharia. Achamos interessante explorar ainda mais o conceito de automação para facilitar a experiência dos nossos clientes.",
     icon: "bulb-outline" as keyof typeof Ionicons.glyphMap,
   },
   {
     id: 2,
     title: "Produção artesanal",
-    text: "Nosso conceito inicial foi explorar a tecnologia com a cerveja, trabalando com a Cervejaria 4.0, utilizando nosso controlador para maximizar a produção de cerveja com ainda mais qualidade, vale constar que graças ao controlador, nos permitiu registrar temperaturas pelo Dashboard, além de realizar a Witbier.",
+    text: "Nosso conceito inicial foi explorar a tecnologia junto com a cerveja, trabalhando com a Cervejaria 4.0 e utilizando nosso controlador para maximizar a produção com ainda mais qualidade. Graças ao controlador, foi possível registrar temperaturas pelo Dashboard, além de realizar a produção da Witbier.",
     icon: "beer-outline" as keyof typeof Ionicons.glyphMap,
   },
   {
     id: 3,
     title: "Tecnologia Aplicada",
-    text: "O controlador detem do esp32, e sensores, junto com o Dashboard que regristram precisamente a temperatura da cerveja, e registra dentro do sistema no Dashboard, junto com o aplicativo que busca conectar ainda mais a clientela, e causar uma boa experiencia com a Schraderbräu.",
+    text: "O controlador conta com ESP32, sensores e Dashboard para registrar precisamente a temperatura da cerveja dentro do sistema. O aplicativo busca conectar ainda mais a clientela e proporcionar uma boa experiência com a Schraderbräu.",
     icon: "hardware-chip-outline" as keyof typeof Ionicons.glyphMap,
   },
   {
@@ -98,6 +98,9 @@ export default function Home() {
   const fillAnim = useRef(new Animated.Value(0)).current;
   const foamAnim = useRef(new Animated.Value(0)).current;
 
+  const foamLoopRef = useRef<Animated.CompositeAnimation | null>(null);
+  const fillAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+
   const bubbleAnims = useRef(
     Array.from({ length: 16 }, () => new Animated.Value(0))
   ).current;
@@ -118,17 +121,23 @@ export default function Home() {
   });
 
   function startAnimation() {
+    fillAnimationRef.current?.stop();
+    foamLoopRef.current?.stop();
+
+    fillAnim.stopAnimation();
+    foamAnim.stopAnimation();
+
     fillAnim.setValue(0);
     foamAnim.setValue(0);
 
-    Animated.timing(fillAnim, {
+    const fillAnimation = Animated.timing(fillAnim, {
       toValue: 1,
       duration: 4300,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
-    }).start();
+    });
 
-    Animated.loop(
+    const foamLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(foamAnim, {
           toValue: 1,
@@ -143,7 +152,13 @@ export default function Home() {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+
+    fillAnimationRef.current = fillAnimation;
+    foamLoopRef.current = foamLoop;
+
+    fillAnimation.start();
+    foamLoop.start();
   }
 
   useEffect(() => {
@@ -175,6 +190,8 @@ export default function Home() {
 
     return () => {
       bubbleLoops.forEach((loop) => loop.stop());
+      foamLoopRef.current?.stop();
+      fillAnimationRef.current?.stop();
     };
   }, []);
 
@@ -289,6 +306,7 @@ export default function Home() {
 
         <View style={styles.storySection}>
           <Text style={styles.sectionSmallTitle}>Narrativa do trabalho</Text>
+
           <Text style={styles.storySectionTitle}>
             Linha do tempo Schraderbräu
           </Text>

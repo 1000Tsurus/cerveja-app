@@ -15,7 +15,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSBluetoothAlwaysUsageDescription": "Este aplicativo precisa de acesso contínuo ao Bluetooth para monitorar e controlar o tanque de cerveja."
+        "NSBluetoothAlwaysUsageDescription": "Este aplicativo precisa de acesso contínuo ao Bluetooth para monitorar e controlar o tanque de cerveja.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.devtsurus.cerveja"
     },

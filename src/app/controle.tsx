@@ -58,7 +58,7 @@ export default function Controle() {
 
     // Os tempos aqui são apenas para a animação visual da UI bater com o hardware
     const duration =
-      ml === 50 ? 2500 : ml === 250 ? 5000 : 8000;
+      ml === 50 ? 4500 : ml === 180 ? 15000 : 24000;
 
     Animated.timing(progressAnim, {
       toValue: 100,
@@ -115,7 +115,7 @@ export default function Controle() {
           </View>
 
           <View style={styles.buttonsContainer}>
-            {[50, 250, 500].map((dose) => {
+            {[50, 180, 300].map((dose) => {
               const isActive = selectedDose === dose;
 
               const animatedWidth = progressAnim.interpolate({
@@ -174,7 +174,7 @@ export default function Controle() {
                     >
                       {dose === 50
                         ? "Melhor opção para degustação."
-                        : dose === 250
+                        : dose === 180
                           ? "Quantidade padrão para servir."
                           : "Dose completa com maior tempo de bomba."}
                     </Text>

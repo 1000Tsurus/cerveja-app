@@ -33,7 +33,7 @@ export default function Perfil() {
     {
       id: 2,
       name: "Nicolas Fagundes",
-      role: "Gestão e Documentação¹",
+      role: "Liderança, Gestão de Projeto e Integração Grafana",
       description:
         "Responsável na gestão e documentação do projeto, auxiliando na organização geral das etapas e no acompanhamento do desenvolvimento do grupo. Além disso, contribuiu com a produção da cerveja, apoiou a integração com o Grafana e exerceu o papel de liderança, ajudando a manter a equipe alinhada durante todo o projeto.",
       foto: require("../../assets/images/nick.jpg"),
@@ -57,7 +57,7 @@ export default function Perfil() {
     {
       id: 5,
       name: "Victor de Jesus",
-      role: "Planejamento de Manufatura e Montagem",
+      role: "Desenvolvimento da Estrutura, Manufatura e Montagem",
       description:
         "Ficou responsável pela construção da caixa do controlador e pela organização da parte física do sistema. Além disso, auxiliou no desenvolvimento do circuito, contribuiu com a documentação e também participou das etapas práticas da produção da cerveja artesanal.",
       foto: require("../../assets/images/victor.jpg"),
@@ -65,17 +65,17 @@ export default function Perfil() {
     {
       id: 6,
       name: "Guilherme Pontes",
-      role: "Planejamento Elétrico e Montagem",
+      role: "Engenharia de Firmware e Hardware Elétrico",
       description:
-        "Atuou no planejamento elétrico e na montagem do projeto, sendo responsável pelo desenvolvimento do circuito do controlador e do circuito da bomba. Além disso, auxiliou na integração do Bluetooth com o aplicativo, contribuindo para o funcionamento e comunicação do sistema.",
+        "Atuou no desenvolvimento elétrico e na montagem do projeto, sendo responsável pelo desenvolvimento do circuito do controlador e do circuito da bomba. Além disso, auxiliou na integração do Bluetooth com o aplicativo, contribuindo para o funcionamento e comunicação do sistema.",
       foto: require("../../assets/images/gpontes.jpg"),
     },
     {
       id: 7,
       name: "Alvaro Sáteles",
-      role: "Planejamento e Desenvolvimento de Arquitetura",
+      role: "Desenvolvimento Web, Arquitetura de Dados e Integração de IA",
       description:
-        "Responsável pela criação do dashboard e do site, ajudando a organizar e apresentar as informações do sistema de forma mais visual e acessível. Além disso, também contribuiu nas etapas práticas da produção da cerveja e no processo de engarrafamento.",
+        "Responsável pela criação do site oficial e do dashboard de monitoramento. Além disso, elevou o nível do projeto ao desenvolver e integrar uma Inteligência Artificial que simula de forma imersiva um personagem da série que inspirou a logo ",
       foto: require("../../assets/images/alv.jpg"),
     },
   ];
@@ -101,8 +101,8 @@ export default function Perfil() {
           </Text>
 
           <Text style={styles.introText}>
-            O Schrader Beer é um sistema inteligente de automação para produção de cerveja artesanal, 
-            utilizando IoT, ESP32 e controle PID para monitorar e controlar a temperatura do processo em tempo real, 
+            O Schrader Beer é um sistema inteligente de automação para produção de cerveja artesanal,
+            utilizando IoT, ESP32 e controle PID para monitorar e controlar a temperatura do processo em tempo real,
             trazendo mais precisão, qualidade e eficiência à fabricação.
           </Text>
         </View>
